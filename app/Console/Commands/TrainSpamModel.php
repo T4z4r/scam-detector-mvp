@@ -13,11 +13,15 @@ class TrainSpamModel extends Command
     public function handle()
     {
         try {
+            $this->info('Starting model training...');
             $detector = new SpamDetector();
             $result = $detector->train();
             $this->info($result);
         } catch (\Exception $e) {
             $this->error('Training failed: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Training error: ' . $e->getMessage());
+            return 1;
         }
+        return 0;
     }
 }
