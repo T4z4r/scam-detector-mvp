@@ -17,6 +17,7 @@ class SpamDetector
 
     public function __construct()
     {
+        // Don't load model in constructor to avoid exception during training
         $this->loadModel();
     }
 
@@ -25,16 +26,21 @@ class SpamDetector
         $path = storage_path('app/' . $this->modelPath);
         if (file_exists($path)) {
             $this->pipeline = unserialize(file_get_contents($path));
-        } else {
+        }else {
             throw new \Exception('Model not trained. Run "php artisan train:spam-model" first.');
         }
     }
 
-    public function train()
+    public function train(): string
     {
         try {
             // Load dataset (tab-separated: label\ttext)
-            $dataset = new CsvDataset(storage_path('app/spam.csv'), 1, true, "\t");
+            $datasetPath = storage_path('app/spam.csv');
+            if (!file_exists($datasetPath)) {
+                throw new \Exception('Dataset not found at ' . $datasetPath);
+            }
+
+            $dataset = new CsvDataset($datasetPath, 1, true, "\t");
 
             $samples = [];
             $targets = [];
@@ -43,19 +49,23 @@ class SpamDetector
                 $targets[] = $dataset->getTargets()[$index]; // 'spam' or 'ham'
             }
 
-            $pipeline = new Pipeline([
-                new TokenCountVectorizer(new WordTokenizer()),
-                new TfIdfTransformer(),
+            if (empty($samples)) {
+                throw new \Exception('No samples found in dataset');
+            }
+
+            $pipeline = new Pipeline(
+                [new TokenCountVectorizer(new WordTokenizer()), new TfIdfTransformer()],
                 new NaiveBayes()
-            ]);
+            );
 
             $pipeline->train($samples, $targets);
 
+            // Save the model
             file_put_contents(storage_path('app/' . $this->modelPath), serialize($pipeline));
             $this->pipeline = $pipeline;
 
-            Log::info('Spam model trained successfully.');
-            return 'Model trained and saved!';
+            Log::info('Spam model trained successfully with ' . count($samples) . ' samples.');
+            return 'Model trained and saved successfully!';
         } catch (\Exception $e) {
             Log::error('Training failed: ' . $e->getMessage());
             throw $e;
@@ -75,26 +85,67 @@ class SpamDetector
 
     public function predict(string $text, string $sender = ''): array
     {
+        // Check if model exists
+        if (!$this->pipeline) {
+            try {
+                $this->loadModel();
+                if (!$this->pipeline) {
+                    return [
+                        'label' => 'unknown',
+                        'confidence' => 0,
+                        'reason' => 'Model not trained. Please run training first.'
+                    ];
+                }
+            } catch (\Exception $e) {
+                return [
+                    'label' => 'unknown',
+                    'confidence' => 0,
+                    'reason' => 'Model not available: ' . $e->getMessage()
+                ];
+            }
+        }
+
         $processed = $this->preprocess($text . ' ' . $sender);
 
         // Rule-based override for high-confidence TZ/KE scams
         $lowerInput = strtolower($text . ' ' . $sender);
         if (preg_match('/(mpesa reversal|flex loan|confirm pin|godi|http|tsh \d{4,}|thibitisha pin|pesa imerudiwa)/i', $lowerInput)) {
-            return ['label' => 'scam', 'confidence' => 0.99, 'reason' => 'Matches TZ/KE scam patterns (e.g., M-Pesa reversal)'];
+            return [
+                'label' => 'scam',
+                'confidence' => 0.99,
+                'reason' => 'Matches TZ/KE scam patterns (e.g., M-Pesa reversal)'
+            ];
         }
 
-        $prediction = $this->pipeline->predict([$processed])[0];
-        $probabilities = $this->pipeline->getClassifier()->predictProbability([$processed])[0];
+        try {
+            $prediction = $this->pipeline->predict([$processed])[0];
+            $classifier = $this->pipeline->getClassifier();
 
-        $label = ($prediction === 'spam') ? 'scam' : 'safe';
-        $confidence = max($probabilities['spam'] ?? 0, $probabilities['ham'] ?? 0);
+            // Get probabilities from the classifier
+            $probabilities = $classifier->predictProbability([$processed])[0];
 
-        Log::info('Prediction made: ' . $label . ' (confidence: ' . $confidence . ')');
+            $label = ($prediction === 'spam') ? 'scam' : 'safe';
+            $confidence = max($probabilities['spam'] ?? 0, $probabilities['ham'] ?? 0);
 
-        return [
-            'label' => $label,
-            'confidence' => $confidence,
-            'reason' => 'ML classification'
-        ];
+            Log::info('Prediction made: ' . $label . ' (confidence: ' . $confidence . ')');
+
+            return [
+                'label' => $label,
+                'confidence' => $confidence,
+                'reason' => 'ML classification'
+            ];
+        } catch (\Exception $e) {
+            Log::error('Prediction error: ' . $e->getMessage());
+            return [
+                'label' => 'unknown',
+                'confidence' => 0,
+                'reason' => 'Prediction failed: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    public function isModelTrained(): bool
+    {
+        return $this->pipeline !== null;
     }
 }

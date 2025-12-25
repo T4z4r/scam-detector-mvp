@@ -2,7 +2,8 @@
 
 use App\Services\SpamDetector;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 Route::get('/', function () {
     return view('welcome');
@@ -13,7 +14,21 @@ Route::get('/scam-check', function () {
 });
 
 Route::post('/scam-check', function (Request $request) {
-    $detector = new SpamDetector();
-    $result = $detector->predict($request->text ?? '', $request->sender ?? '');
-    return view('scam-check', ['result' => $result]);
+    try {
+        $validator = Validator::make($request->all(), [
+            'text' => 'required|string|max:1000',
+            'sender' => 'string|nullable|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            return view('scam-check', ['error' => $validator->errors()->first()]);
+        }
+
+        $detector = new SpamDetector();
+        $result = $detector->predict($request->text, $request->sender ?? '');
+        return view('scam-check', ['result' => $result]);
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Web route prediction error: ' . $e->getMessage());
+        return view('scam-check', ['error' => 'Service temporarily unavailable. Please try again later.']);
+    }
 });
