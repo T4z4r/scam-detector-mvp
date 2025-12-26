@@ -32,6 +32,17 @@ class SpamDetector
         // Don't throw exception - allow training to proceed
     }
 
+    protected function safeLog($level, $message)
+    {
+        if (class_exists('Illuminate\Support\Facades\Log')) {
+            try {
+                Log::$level($message);
+            } catch (\Exception $e) {
+                // Silently ignore logging errors
+            }
+        }
+    }
+
     public function train(): string
     {
         try {
@@ -66,10 +77,10 @@ class SpamDetector
             file_put_contents($modelPath, serialize($pipeline));
             $this->pipeline = $pipeline;
 
-            Log::info('Spam model trained successfully with ' . count($samples) . ' samples.');
+            $this->safeLog('info', 'Spam model trained successfully with ' . count($samples) . ' samples.');
             return 'Model trained and saved successfully!';
         } catch (\Exception $e) {
-            Log::error('Training failed: ' . $e->getMessage());
+            $this->safeLog('error', 'Training failed: ' . $e->getMessage());
             throw $e;
         }
     }
@@ -145,7 +156,7 @@ class SpamDetector
             $label = ($prediction === 'spam') ? 'scam' : 'safe';
             $confidence = max($probabilities['spam'] ?? 0, $probabilities['ham'] ?? 0);
 
-            Log::info('Prediction made: ' . $label . ' (confidence: ' . $confidence . ')');
+            $this->safeLog('info', 'Prediction made: ' . $label . ' (confidence: ' . $confidence . ')');
 
             return [
                 'label' => $label,
@@ -153,7 +164,7 @@ class SpamDetector
                 'reason' => 'ML classification'
             ];
         } catch (\Exception $e) {
-            Log::error('Prediction error: ' . $e->getMessage());
+            $this->safeLog('error', 'Prediction error: ' . $e->getMessage());
             return [
                 'label' => 'unknown',
                 'confidence' => 0,
