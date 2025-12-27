@@ -116,6 +116,7 @@
             <nav class="nav-links">
                 <a href="/">Home</a>
                 <a href="/scam-check">Check Message</a>
+                <a href="/training">Train Model</a>
                 <a href="https://www.cck.go.ke/" target="_blank">Report Scams</a>
             </nav>
         </header>
