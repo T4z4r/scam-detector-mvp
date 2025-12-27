@@ -20,7 +20,7 @@
         font-size: 1.2rem;
         color: #666;
         margin-bottom: 2rem;
-        max-width: 600px;
+        max-width: 1000px;
         margin-left: auto;
         margin-right: auto;
     }
@@ -46,7 +46,7 @@
 
     .features {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
         gap: 30px;
         margin: 50px 0;
     }
@@ -85,7 +85,7 @@
 
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 20px;
         margin-top: 20px;
     }
