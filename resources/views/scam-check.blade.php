@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Check Messages - TZ/KE Scam Detector')
+@section('title', 'Check Messages - Tanzania Scam Detector')
 
 @section('styles')
 <style>
@@ -209,7 +209,7 @@
                 class="form-control"
                 name="sender"
                 id="sender"
-                placeholder="e.g., MPESA, FLEX, +254700000000"
+                placeholder="e.g., MPESA, TIGO, +255700000000"
                 value="{{ old('sender') }}"
             >
         </div>
@@ -268,8 +268,7 @@
                     <li><strong>Do not share</strong> personal information, PINs, or passwords</li>
                     <li><strong>Report to authorities:</strong></li>
                     <ul>
-                        <li>Kenya: Call <strong>999</strong> or visit <a href="https://www.cck.go.ke/" target="_blank">CCK Website</a></li>
-                        <li>Tanzania: Call <strong>333</strong></li>
+                        <li>Tanzania: Call <strong>333</strong> or visit <a href="https://www.amic.go.tz/" target="_blank">AMIC Website</a></li>
                     </ul>
                 </ul>
             </div>
@@ -284,14 +283,14 @@
 
 <div class="sample-messages">
     <h3>💡 Try These Sample Messages:</h3>
-    <div class="sample-message" onclick="fillMessage('mpesa reversal ksh 2500 click http://bit.ly/xyz confirm pin now')">
-        <strong>Scam Example:</strong> "mpesa reversal ksh 2500 click http://bit.ly/xyz confirm pin now"
+    <div class="sample-message" onclick="fillMessage('mpesa reversal tsh 2500 click http://bit.ly/xyz confirm pin now')">
+        <strong>Scam Example:</strong> "mpesa reversal tsh 2500 click http://bit.ly/xyz confirm pin now"
     </div>
     <div class="sample-message" onclick="fillMessage('meeting at 3pm today please confirm attendance')">
         <strong>Safe Example:</strong> "meeting at 3pm today please confirm attendance"
     </div>
-    <div class="sample-message" onclick="fillMessage('flex loan approved get 50000 tsh instantly apply now www.fake-loan.com')">
-        <strong>Scam Example:</strong> "flex loan approved get 50000 tsh instantly apply now www.fake-loan.com"
+    <div class="sample-message" onclick="fillMessage('tigo money approved get 50000 tsh instantly apply now www.fake-loan.com')">
+        <strong>Scam Example:</strong> "tigo money approved get 50000 tsh instantly apply now www.fake-loan.com"
     </div>
 </div>
 
@@ -299,10 +298,10 @@
     <h3>🛡️ How It Works</h3>
     <p>Our scam detector uses advanced machine learning and pattern recognition to identify potentially fraudulent messages. It specifically looks for:</p>
     <ul>
-        <li><strong>TZ/KE Scam Patterns:</strong> M-Pesa, Flex, Godi reversal scams</li>
+        <li><strong>TZ Scam Patterns:</strong> M-Pesa, Tigo Money, Airtel Money, Godi reversal scams</li>
         <li><strong>Suspicious Keywords:</strong> PIN requests, reversal mentions, urgent language</li>
         <li><strong>URL Patterns:</strong> Shortened links, fake websites</li>
-        <li><strong>Financial Terms:</strong> Unusual amounts, loan promises</li>
+        <li><strong>Financial Terms:</strong> Unusual amounts, loan promises in TSH</li>
     </ul>
 </div>
 @endsection

@@ -1,6 +1,6 @@
-# 🛡️ TZ/KE Scam Detector MVP
+# 🛡️ Tanzania Scam Detector MVP
 
-> Advanced AI-powered scam detection system specifically designed for Tanzania and Kenya
+> Advanced AI-powered scam detection system specifically designed for Tanzania
 
 [![Laravel](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2+-blue.svg)](https://php.net)
@@ -9,18 +9,18 @@
 
 ## 🎯 Overview
 
-The TZ/KE Scam Detector is a machine learning-powered web application designed to protect users in Tanzania and Kenya from fraudulent SMS messages and scams. The system specializes in detecting region-specific scam patterns including M-Pesa reversals, Flex loan frauds, and other common financial scams targeting mobile money users.
+The Tanzania Scam Detector is a machine learning-powered web application designed to protect users in Tanzania from fraudulent SMS messages and scams. The system specializes in detecting region-specific scam patterns including M-Pesa reversals, Tigo Money frauds, and other common financial scams targeting mobile money users.
 
 ## ✨ Key Features
 
 ### 🤖 AI-Powered Detection
 - **Machine Learning Engine**: Uses PHP-ML library with Naive Bayes classification
-- **Pattern Recognition**: Trained on thousands of real scam examples from TZ/KE
+- **Pattern Recognition**: Trained on thousands of real scam examples from Tanzania
 - **Confidence Scoring**: Provides reliability metrics for each prediction
 - **Rule-based Overrides**: High-confidence patterns for obvious scams
 
 ### 🌍 Regional Specialization
-- **TZ/KE Scam Patterns**: Specialized detection for local fraud tactics
+- **TZ Scam Patterns**: Specialized detection for local fraud tactics
 - **M-Pesa Integration**: Recognizes M-Pesa-related scam attempts
 - **Flex Loan Detection**: Identifies fake loan approval scams
 - **Local Language Support**: Handles Swahili and English scam messages

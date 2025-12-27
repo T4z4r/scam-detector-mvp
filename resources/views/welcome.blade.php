@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Welcome - TZ/KE Scam Detector')
+@section('title', 'Welcome - Tanzania Scam Detector')
 
 @section('styles')
 <style>
@@ -131,7 +131,7 @@
 @section('content')
 <div class="hero">
     <h1>🛡️ Protect Yourself from Scams</h1>
-    <p>Advanced AI-powered scam detection for Tanzania and Kenya. Keep your money and personal information safe from fraudulent messages.</p>
+    <p>Advanced AI-powered scam detection for Tanzania. Keep your money and personal information safe from fraudulent messages.</p>
 
     <a href="/scam-check" class="cta-button">🔍 Check a Message Now</a>
     <a href="#how-it-works" class="cta-button" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">ℹ️ Learn How It Works</a>
@@ -152,8 +152,8 @@
 
     <div class="feature-card">
         <div class="feature-icon">🇹🇿</div>
-        <h3>TZ/KE Focused</h3>
-        <p>Specialized in detecting scams common in Tanzania and Kenya, including M-Pesa and Flex fraud.</p>
+        <h3>TZ Focused</h3>
+        <p>Specialized in detecting scams common in Tanzania, including M-Pesa, Tigo Money, and Airtel Money fraud.</p>
     </div>
 
     <div class="feature-card">

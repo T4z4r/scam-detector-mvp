@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Model Training - TZ/KE Scam Detector')
+@section('title', 'Model Training - Tanzania Scam Detector')
 
 @section('styles')
 <style>
@@ -399,7 +399,7 @@
     <ul>
         <li><strong>Training Data Format:</strong> CSV file with tab-separated values (label<tab>message)</li>
         <li><strong>Labels:</strong> Use "spam" for scam/fraudulent messages, "ham" for legitimate messages</li>
-        <li><strong>Sample Format:</strong> <code>spam<tab>mpesa reversal ksh 2500 click link confirm pin</code></li>
+        <li><strong>Sample Format:</strong> <code>spam<tab>mpesa reversal tsh 2500 click link confirm pin</code></li>
         <li><strong>Minimum Data:</strong> At least 10 samples recommended for basic training</li>
         <li><strong>Best Results:</strong> 100+ samples with balanced spam/ham ratio</li>
         <li><strong>Model Updates:</strong> Retrain periodically with new data to maintain accuracy</li>

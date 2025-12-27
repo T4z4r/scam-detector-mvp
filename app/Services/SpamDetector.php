@@ -89,8 +89,8 @@ class SpamDetector
     {
         $text = strtolower($text);
         $text = preg_replace('/[^a-z0-9\s]/', '', $text);
-        // TZ/KE scam keywords as features
-        $text = preg_replace('/(mpesa|flex|pesa|godi|reversal|pin|loan|tsh|thibitisha)/i', ' SCAM_KEYWORD ', $text);
+        // TZ scam keywords as features (Tanzania focused)
+        $text = preg_replace('/(mpesa|pesa|imeri|tigo airtel|halotel|godi|reversal|pin|loan|tsh|thibitisha)/i', ' SCAM_KEYWORD ', $text);
         $text = preg_replace('/http\S+|www\S+/i', ' SCAM_URL ', $text);
         $text = preg_replace('/\d{4,}/', ' SCAM_NUMBER ', $text); // Large amounts
         return trim($text);
@@ -120,13 +120,13 @@ class SpamDetector
 
         $processed = $this->preprocess($text . ' ' . $sender);
 
-        // Rule-based override for high-confidence TZ/KE scams
+        // Rule-based override for high-confidence TZ scams (Tanzania focused)
         $lowerInput = strtolower($text . ' ' . $sender);
-        if (preg_match('/(mpesa reversal|flex loan|confirm pin|godi|http|tsh \d{4,}|thibitisha pin|pesa imerudiwa)/i', $lowerInput)) {
+        if (preg_match('/(mpesa reversal|pesa imerudiwa|tigo money|airtel money|halotel|confirm pin|godi|http|tsh \d{4,}|thibitisha pin)/i', $lowerInput)) {
             return [
                 'label' => 'scam',
                 'confidence' => 0.99,
-                'reason' => 'Matches TZ/KE scam patterns (e.g., M-Pesa reversal)'
+                'reason' => 'Matches TZ scam patterns (e.g., M-Pesa reversal, Tigo Money)'
             ];
         }
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'TZ/KE Scam Detector')</title>
+    <title>@yield('title', 'Tanzania Scam Detector')</title>
     <style>
         * {
             margin: 0;
@@ -111,13 +111,13 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>🚨 TZ/KE Scam Detector</h1>
-            <p>Protect yourself from fraudulent SMS and messages</p>
+            <h1>🚨 Tanzania Scam Detector</h1>
+            <p>Protect yourself from fraudulent SMS and messages in Tanzania</p>
             <nav class="nav-links">
                 <a href="/">Home</a>
                 <a href="/scam-check">Check Message</a>
                 <a href="/training">Train Model</a>
-                <a href="https://www.cck.go.ke/" target="_blank">Report Scams</a>
+                <a href="https://www.amic.go.tz/" target="_blank">Report Scams</a>
             </nav>
         </header>
 
