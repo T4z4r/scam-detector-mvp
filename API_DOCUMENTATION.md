@@ -111,6 +111,212 @@ curl -X POST https://api.your-domain.com/v1/scam/check \
 | `timestamp` | string | ISO 8601 timestamp of response |
 | `request_id` | string | Unique request identifier for debugging |
 
+### POST /training/train
+
+Start or retrain the spam detection model.
+
+#### Endpoint Details
+- **URL**: `/training/train`
+- **Method**: `POST`
+- **Content-Type**: `application/json`
+- **Rate Limit**: 10 requests per hour per IP
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `action` | string | Yes | Action to perform: `"train"` or `"retrain"` |
+
+#### Example Request
+
+```bash
+curl -X POST https://api.your-domain.com/v1/training/train \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "train"
+  }'
+```
+
+#### Response Format
+
+```json
+{
+  "success": true,
+  "message": "Model training completed successfully!",
+  "modelStatus": {
+    "is_trained": true,
+    "model_size": 24576,
+    "last_trained": "2025-12-28 19:43:00",
+    "path": "/storage/app/spam_model.phpml"
+  }
+}
+```
+
+### GET /training/status
+
+Check the current training status and model information.
+
+#### Endpoint Details
+- **URL**: `/training/status`
+- **Method**: `GET`
+- **Rate Limit**: 60 requests per minute per IP
+
+#### Example Request
+
+```bash
+curl -X GET https://api.your-domain.com/v1/training/status
+```
+
+#### Response Format
+
+```json
+{
+  "success": true,
+  "modelStatus": {
+    "is_trained": true,
+    "model_size": 24576,
+    "last_trained": "2025-12-28 19:43:00",
+    "path": "/storage/app/spam_model.phpml"
+  },
+  "data": {
+    "exists": true,
+    "total_samples": 1500,
+    "spam_count": 750,
+    "ham_count": 750,
+    "file_size": 45678,
+    "last_modified": "2025-12-28 19:40:00",
+    "sample_data": [
+      {
+        "label": "spam",
+        "message": "Congratulations! You have won $5000. Click here to claim..."
+      }
+    ]
+  }
+}
+```
+
+### GET /training/data
+
+Get training data statistics and sample data.
+
+#### Endpoint Details
+- **URL**: `/training/data`
+- **Method**: `GET`
+- **Rate Limit**: 60 requests per minute per IP
+
+#### Response Format
+
+```json
+{
+  "success": true,
+  "data": {
+    "exists": true,
+    "total_samples": 1500,
+    "spam_count": 750,
+    "ham_count": 750,
+    "file_size": 45678,
+    "last_modified": "2025-12-28 19:40:00",
+    "sample_data": [
+      {
+        "label": "spam",
+        "message": "Congratulations! You have won $5000. Click here to claim..."
+      }
+    ]
+  }
+}
+```
+
+### POST /training/upload
+
+Upload training data file (CSV format).
+
+#### Endpoint Details
+- **URL**: `/training/upload`
+- **Method**: `POST`
+- **Content-Type**: `multipart/form-data`
+- **Rate Limit**: 5 requests per hour per IP
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `training_file` | file | Yes | CSV file with training data (max 10MB) |
+
+#### Example Request
+
+```bash
+curl -X POST https://api.your-domain.com/v1/training/upload \
+  -F "training_file=@training_data.csv"
+```
+
+#### Response Format
+
+```json
+{
+  "success": true,
+  "message": "Training data uploaded successfully!",
+  "data": {
+    "exists": true,
+    "total_samples": 1500,
+    "spam_count": 750,
+    "ham_count": 750,
+    "file_size": 45678,
+    "last_modified": "2025-12-28 19:43:00"
+  }
+}
+```
+
+### DELETE /training/data
+
+Delete the current training dataset.
+
+#### Endpoint Details
+- **URL**: `/training/data`
+- **Method**: `DELETE`
+- **Rate Limit**: 3 requests per hour per IP
+
+#### Example Request
+
+```bash
+curl -X DELETE https://api.your-domain.com/v1/training/data
+```
+
+#### Response Format
+
+```json
+{
+  "success": true,
+  "message": "Training data deleted successfully!"
+}
+```
+
+### GET /training/metrics
+
+Get detailed model performance metrics.
+
+#### Endpoint Details
+- **URL**: `/training/metrics`
+- **Method**: `GET`
+- **Rate Limit**: 60 requests per minute per IP
+
+#### Response Format
+
+```json
+{
+  "success": true,
+  "metrics": {
+    "total_samples": 1500,
+    "spam_samples": 750,
+    "ham_samples": 750,
+    "spam_ratio": 50.0,
+    "ham_ratio": 50.0,
+    "is_trained": true,
+    "model_size": 24576,
+    "last_trained": "2025-12-28 19:43:00"
+  }
+}
+```
+
 ## 📝 Request Format
 
 ### Content Type
