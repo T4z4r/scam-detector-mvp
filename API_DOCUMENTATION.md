@@ -1,4 +1,4 @@
-# 📡 TZ/KE Scam Detector API Documentation
+# 📡 Tanzania Scam Detector API Documentation
 
 > Complete API reference for the Scam Detection Service
 
@@ -18,10 +18,10 @@
 
 ## 🔍 Overview
 
-The TZ/KE Scam Detector API provides programmatic access to our machine learning-powered scam detection service. The API allows you to analyze SMS messages and other text content to determine the likelihood of being a scam, specifically trained on Tanzania and Kenya fraud patterns.
+The Tanzania Scam Detector API provides programmatic access to our machine learning-powered scam detection service. The API allows you to analyze SMS messages and other text content to determine the likelihood of being a scam, specifically trained on Tanzania fraud patterns.
 
 ### Key Features
-- **High Accuracy**: 89% detection accuracy on TZ/KE scam patterns
+- **High Accuracy**: 89% detection accuracy on Tanzania scam patterns
 - **Fast Response**: Average response time under 200ms
 - **Specialized Detection**: Optimized for East African scam tactics
 - **Confidence Scoring**: Detailed probability assessments
@@ -81,8 +81,8 @@ curl -X POST https://api.your-domain.com/v1/scam/check \
   "data": {
     "result": "scam",
     "confidence": "99%",
-    "reason": "Matches TZ/KE scam patterns (e.g., M-Pesa reversal)",
-    "alert": "🚨 SCAM DETECTED! Ignore, block sender, and report to authorities (e.g., 333 in TZ/KE).",
+    "reason": "Matches TZ scam patterns (e.g., M-Pesa reversal)",
+    "alert": "🚨 SCAM DETECTED! Ignore, block sender, and report to authorities (e.g., 333 in Tanzania).",
     "analysis": {
       "method": "ml_classification",
       "confidence_score": 0.99,
@@ -474,7 +474,7 @@ X-Analytics-Avg-Response-Time: 145ms
 - **Initial Release**
 - **Core**: Scam detection API
 - **Features**: Basic web interface
-- **Support**: TZ/KE scam patterns
+- **Support**: Tanzania scam patterns
 
 ## 🆘 Support
 

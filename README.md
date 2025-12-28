@@ -176,7 +176,7 @@ storage/app/
 ### Environment Variables
 
 ```env
-APP_NAME="TZ/KE Scam Detector"
+APP_NAME="Tanzania Scam Detector"
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://your-domain.com
@@ -331,6 +331,6 @@ This project is open-sourced software licensed under the [MIT License](LICENSE).
 
 ---
 
-**Made with ❤️ for the TZ/KE community**
+**Made with ❤️ for the Tanzania community**
 
 *Protecting digital payments, one message at a time.*
