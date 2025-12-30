@@ -75,23 +75,29 @@ curl -X POST https://api.your-domain.com/v1/scam/check \
 
 #### Response Format
 
+**Success Response (200 OK)**
 ```json
 {
-  "success": true,
+  "status": "success",
+  "message": "Scam detected in message",
   "data": {
     "result": "scam",
     "confidence": "99%",
     "reason": "Matches TZ scam patterns (e.g., M-Pesa reversal)",
     "alert": "🚨 SCAM DETECTED! Ignore, block sender, and report to authorities (e.g., 333 in Tanzania).",
-    "analysis": {
-      "method": "ml_classification",
-      "confidence_score": 0.99,
-      "processing_time_ms": 145,
-      "model_version": "1.2.0"
-    }
-  },
-  "timestamp": "2025-12-27T16:37:00Z",
-  "request_id": "req_1234567890abcdef"
+    "risk_level": "high"
+  }
+}
+```
+
+**Error Response (422 Unprocessable Entity)**
+```json
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": {
+    "text": ["The text field is required and must not exceed 1000 characters."]
+  }
 }
 ```
 
@@ -99,17 +105,14 @@ curl -X POST https://api.your-domain.com/v1/scam/check \
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `success` | boolean | Whether the request was successful |
+| `status` | string | Response status: `"success"` or `"error"` |
+| `message` | string | Descriptive success or error message |
 | `data.result` | string | Prediction result: `"scam"`, `"safe"`, or `"unknown"` |
 | `data.confidence` | string | Human-readable confidence percentage |
 | `data.reason` | string | Explanation of why this result was chosen |
 | `data.alert` | string | User-friendly warning or safety message |
-| `data.analysis.method` | string | Detection method used |
-| `data.analysis.confidence_score` | number | Raw confidence score (0.0 to 1.0) |
-| `data.analysis.processing_time_ms` | number | Processing time in milliseconds |
-| `data.analysis.model_version` | string | ML model version used |
-| `timestamp` | string | ISO 8601 timestamp of response |
-| `request_id` | string | Unique request identifier for debugging |
+| `data.risk_level` | string | Risk assessment: `"high"` or `"low"` |
+| `errors` | object | Validation errors (only present on error responses) |
 
 ### POST /training/train
 
@@ -139,16 +142,36 @@ curl -X POST https://api.your-domain.com/v1/training/train \
 
 #### Response Format
 
+**Success Response (200 OK)**
 ```json
 {
-  "success": true,
+  "status": "success",
   "message": "Model training completed successfully!",
-  "modelStatus": {
-    "is_trained": true,
-    "model_size": 24576,
-    "last_trained": "2025-12-28 19:43:00",
-    "path": "/storage/app/spam_model.phpml"
+  "data": {
+    "modelStatus": {
+      "is_trained": true,
+      "model_size": 24576,
+      "last_trained": "2025-12-28 19:43:00",
+      "path": "/storage/app/spam_model.phpml"
+    },
+    "action": "train"
   }
+}
+```
+
+**Error Response (404 Not Found)**
+```json
+{
+  "status": "error",
+  "message": "Training dataset not found. Please upload training data first."
+}
+```
+
+**Error Response (500 Internal Server Error)**
+```json
+{
+  "status": "error",
+  "message": "Training process failed: Training command failed with exit code: 1"
 }
 ```
 
@@ -169,15 +192,60 @@ curl -X GET https://api.your-domain.com/v1/training/status
 
 #### Response Format
 
+**Success Response (200 OK)**
 ```json
 {
-  "success": true,
-  "modelStatus": {
-    "is_trained": true,
-    "model_size": 24576,
-    "last_trained": "2025-12-28 19:43:00",
-    "path": "/storage/app/spam_model.phpml"
-  },
+  "status": "success",
+  "message": "Training status retrieved successfully",
+  "data": {
+    "modelStatus": {
+      "is_trained": true,
+      "model_size": 24576,
+      "last_trained": "2025-12-28 19:43:00",
+      "path": "/storage/app/spam_model.phpml"
+    },
+    "data": {
+      "exists": true,
+      "total_samples": 1500,
+      "spam_count": 750,
+      "ham_count": 750,
+      "file_size": 45678,
+      "last_modified": "2025-12-28 19:40:00",
+      "sample_data": [
+        {
+          "label": "spam",
+          "message": "Congratulations! You have won $5000. Click here to claim..."
+        }
+      ]
+    }
+  }
+}
+```
+
+**Error Response (500 Internal Server Error)**
+```json
+{
+  "status": "error",
+  "message": "Failed to retrieve training status: Unable to access training data"
+}
+```
+
+### GET /training/data
+
+Get training data statistics and sample data.
+
+#### Endpoint Details
+- **URL**: `/training/data`
+- **Method**: `GET`
+- **Rate Limit**: 60 requests per minute per IP
+
+#### Response Format
+
+**Success Response (200 OK)**
+```json
+{
+  "status": "success",
+  "message": "Training data statistics retrieved successfully",
   "data": {
     "exists": true,
     "total_samples": 1500,
@@ -195,34 +263,11 @@ curl -X GET https://api.your-domain.com/v1/training/status
 }
 ```
 
-### GET /training/data
-
-Get training data statistics and sample data.
-
-#### Endpoint Details
-- **URL**: `/training/data`
-- **Method**: `GET`
-- **Rate Limit**: 60 requests per minute per IP
-
-#### Response Format
-
+**Error Response (500 Internal Server Error)**
 ```json
 {
-  "success": true,
-  "data": {
-    "exists": true,
-    "total_samples": 1500,
-    "spam_count": 750,
-    "ham_count": 750,
-    "file_size": 45678,
-    "last_modified": "2025-12-28 19:40:00",
-    "sample_data": [
-      {
-        "label": "spam",
-        "message": "Congratulations! You have won $5000. Click here to claim..."
-      }
-    ]
-  }
+  "status": "error",
+  "message": "Failed to retrieve training data: Unable to read dataset file"
 }
 ```
 
@@ -251,9 +296,10 @@ curl -X POST https://api.your-domain.com/v1/training/upload \
 
 #### Response Format
 
+**Success Response (201 Created)**
 ```json
 {
-  "success": true,
+  "status": "success",
   "message": "Training data uploaded successfully!",
   "data": {
     "exists": true,
@@ -263,6 +309,22 @@ curl -X POST https://api.your-domain.com/v1/training/upload \
     "file_size": 45678,
     "last_modified": "2025-12-28 19:43:00"
   }
+}
+```
+
+**Error Response (422 Unprocessable Entity)**
+```json
+{
+  "status": "error",
+  "message": "No valid training data found. Format should be: label\\tmessage (tab-separated)"
+}
+```
+
+**Error Response (500 Internal Server Error)**
+```json
+{
+  "status": "error",
+  "message": "Failed to upload training data: File upload failed"
 }
 ```
 
@@ -283,10 +345,27 @@ curl -X DELETE https://api.your-domain.com/v1/training/data
 
 #### Response Format
 
+**Success Response (200 OK)**
 ```json
 {
-  "success": true,
+  "status": "success",
   "message": "Training data deleted successfully!"
+}
+```
+
+**Error Response (404 Not Found)**
+```json
+{
+  "status": "error",
+  "message": "Training data file not found"
+}
+```
+
+**Error Response (500 Internal Server Error)**
+```json
+{
+  "status": "error",
+  "message": "Failed to delete training data: Permission denied"
 }
 ```
 
@@ -301,10 +380,12 @@ Get detailed model performance metrics.
 
 #### Response Format
 
+**Success Response (200 OK)**
 ```json
 {
-  "success": true,
-  "metrics": {
+  "status": "success",
+  "message": "Model metrics retrieved successfully",
+  "data": {
     "total_samples": 1500,
     "spam_samples": 750,
     "ham_samples": 750,
@@ -314,6 +395,14 @@ Get detailed model performance metrics.
     "model_size": 24576,
     "last_trained": "2025-12-28 19:43:00"
   }
+}
+```
+
+**Error Response (500 Internal Server Error)**
+```json
+{
+  "status": "error",
+  "message": "Failed to retrieve model metrics: Model file not accessible"
 }
 ```
 
@@ -362,22 +451,27 @@ Content-Type: application/json
 
 ```json
 {
-  "success": true,
+  "status": "success",
+  "message": "Message appears safe",
   "data": {
     "result": "safe",
     "confidence": "85%",
     "reason": "ML classification",
     "alert": "✅ Message appears safe, but always exercise caution.",
-    "analysis": {
-      "method": "ml_classification",
-      "confidence_score": 0.85,
-      "processing_time_ms": 123,
-      "model_version": "1.2.0",
-      "features_detected": ["normal_greeting", "legitimate_context"]
-    }
-  },
-  "timestamp": "2025-12-27T16:37:00Z",
-  "request_id": "req_abcdef1234567890"
+    "risk_level": "low"
+  }
+}
+```
+
+### Error Response Structure
+
+```json
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": {
+    "text": ["The text field is required and must not exceed 1000 characters."]
+  }
 }
 ```
 
@@ -405,8 +499,10 @@ Content-Type: application/json
 | Code | Status | Description |
 |------|--------|-------------|
 | 200 | OK | Request successful |
+| 201 | Created | Resource created successfully |
 | 400 | Bad Request | Invalid request format or parameters |
 | 422 | Unprocessable Entity | Validation errors |
+| 404 | Not Found | Requested resource not found |
 | 429 | Too Many Requests | Rate limit exceeded |
 | 500 | Internal Server Error | Server error occurred |
 | 503 | Service Unavailable | Service temporarily unavailable |
@@ -415,17 +511,11 @@ Content-Type: application/json
 
 ```json
 {
-  "success": false,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "The text field is required and must not exceed 1000 characters.",
-    "details": {
-      "field": "text",
-      "constraint": "required|max:1000"
-    }
-  },
-  "timestamp": "2025-12-27T16:37:00Z",
-  "request_id": "req_error123456"
+  "status": "error",
+  "message": "Validation failed",
+  "errors": {
+    "text": ["The text field is required and must not exceed 1000 characters."]
+  }
 }
 ```
 
@@ -664,7 +754,15 @@ X-Analytics-Avg-Response-Time: 145ms
 
 ## 🔄 Changelog
 
-### Version 1.2.0 (Current)
+### Version 1.3.0 (Current)
+- **Enhanced**: Standardized API response format with consistent status codes
+- **Added**: Proper HTTP status codes for all endpoints (200, 201, 404, 422, 500)
+- **Improved**: Error handling with structured error responses
+- **Updated**: Response format uses `status` field instead of `success` boolean
+- **Added**: Risk level categorization in scam detection responses
+- **Improved**: Training endpoint responses with detailed status information
+
+### Version 1.2.0
 - **New**: Enhanced M-Pesa scam detection
 - **Improved**: Confidence scoring algorithm
 - **Added**: Request analytics headers
@@ -703,8 +801,8 @@ X-Analytics-Avg-Response-Time: 145ms
 
 ---
 
-**API Version**: 1.2.0  
-**Last Updated**: December 27, 2025  
+**API Version**: 1.3.0  
+**Last Updated**: December 30, 2025  
 **Base URL**: https://api.your-domain.com/v1
 
 *For the most up-to-date API documentation, visit [docs.your-domain.com](https://docs.your-domain.com)*
