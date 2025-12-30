@@ -18,22 +18,36 @@ class ScamController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         try {
             $detector = new SpamDetector();
             $result = $detector->predict($request->input('text'), $request->input('sender', ''));
 
+            $isScam = $result['label'] === 'scam';
+
             return response()->json([
-                'result' => $result['label'],
-                'confidence' => round($result['confidence'] * 100, 2) . '%',
-                'reason' => $result['reason'],
-                'alert' => ($result['label'] === 'scam') ? '🚨 SCAM DETECTED! Ignore, block sender, and report to authorities (e.g., 333 in TZ/KE).' : '✅ Appears safe.'
-            ]);
+                'status' => 'success',
+                'message' => $isScam ? 'Scam detected in message' : 'Message appears safe',
+                'data' => [
+                    'result' => $result['label'],
+                    'confidence' => round($result['confidence'] * 100, 2) . '%',
+                    'reason' => $result['reason'],
+                    'alert' => $isScam ? '🚨 SCAM DETECTED! Ignore, block sender, and report to authorities (e.g., 333 in TZ/KE).' : '✅ Appears safe.',
+                    'risk_level' => $isScam ? 'high' : 'low'
+                ]
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Prediction error: ' . $e->getMessage());
-            return response()->json(['error' => 'Service unavailable. Please try again later.'], 500);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Internal server error occurred while analyzing message'
+            ], 500);
         }
     }
 }

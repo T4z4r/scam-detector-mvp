@@ -45,9 +45,9 @@ class TrainingController extends Controller
             $datasetPath = storage_path('app/spam.csv');
             if (!file_exists($datasetPath)) {
                 return response()->json([
-                    'success' => false,
+                    'status' => 'error',
                     'message' => 'Training dataset not found. Please upload training data first.'
-                ]);
+                ], 404);
             }
 
             // Start training in background using artisan command
@@ -59,19 +59,22 @@ class TrainingController extends Controller
                 $modelStatus = $this->getModelStatus();
 
                 return response()->json([
-                    'success' => true,
+                    'status' => 'success',
                     'message' => 'Model training completed successfully!',
-                    'modelStatus' => $modelStatus
-                ]);
+                    'data' => [
+                        'modelStatus' => $modelStatus,
+                        'action' => $action
+                    ]
+                ], 200);
             } else {
                 throw new \Exception('Training command failed with exit code: ' . $exitCode);
             }
         } catch (\Exception $e) {
             Log::error('Training error: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
-                'message' => 'Training failed: ' . $e->getMessage()
-            ]);
+                'status' => 'error',
+                'message' => 'Training process failed: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -85,16 +88,19 @@ class TrainingController extends Controller
             $data = $this->getTrainingData();
 
             return response()->json([
-                'success' => true,
-                'modelStatus' => $modelStatus,
-                'data' => $data
-            ]);
+                'status' => 'success',
+                'message' => 'Training status retrieved successfully',
+                'data' => [
+                    'modelStatus' => $modelStatus,
+                    'data' => $data
+                ]
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Status check error: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
-                'message' => 'Failed to get status: ' . $e->getMessage()
-            ]);
+                'status' => 'error',
+                'message' => 'Failed to retrieve training status: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -106,15 +112,16 @@ class TrainingController extends Controller
         try {
             $data = $this->getTrainingData();
             return response()->json([
-                'success' => true,
+                'status' => 'success',
+                'message' => 'Training data statistics retrieved successfully',
                 'data' => $data
-            ]);
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Data retrieval error: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
-                'message' => 'Failed to get data: ' . $e->getMessage()
-            ]);
+                'status' => 'error',
+                'message' => 'Failed to retrieve training data: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -135,7 +142,10 @@ class TrainingController extends Controller
             $lines = explode("\n", trim($content));
 
             if (count($lines) < 2) {
-                throw new \Exception('Training file must contain at least 2 lines (header + data)');
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Training file must contain at least 2 lines (header + data)'
+                ], 422);
             }
 
             // Validate first few lines for correct format
@@ -149,7 +159,10 @@ class TrainingController extends Controller
             }
 
             if ($validLines === 0) {
-                throw new \Exception('No valid training data found. Format should be: label\\tmessage (tab-separated)');
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No valid training data found. Format should be: label\\tmessage (tab-separated)'
+                ], 422);
             }
 
             // Backup existing file
@@ -165,16 +178,16 @@ class TrainingController extends Controller
             $data = $this->getTrainingData();
 
             return response()->json([
-                'success' => true,
+                'status' => 'success',
                 'message' => 'Training data uploaded successfully!',
                 'data' => $data
-            ]);
+            ], 201);
         } catch (\Exception $e) {
             Log::error('Data upload error: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
-                'message' => 'Upload failed: ' . $e->getMessage()
-            ]);
+                'status' => 'error',
+                'message' => 'Failed to upload training data: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -187,18 +200,22 @@ class TrainingController extends Controller
             $datasetPath = storage_path('app/spam.csv');
             if (file_exists($datasetPath)) {
                 unlink($datasetPath);
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Training data deleted successfully!'
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Training data file not found'
+                ], 404);
             }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Training data deleted successfully!'
-            ]);
         } catch (\Exception $e) {
             Log::error('Data deletion error: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete data: ' . $e->getMessage()
-            ]);
+                'status' => 'error',
+                'message' => 'Failed to delete training data: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -228,15 +245,16 @@ class TrainingController extends Controller
             ];
 
             return response()->json([
-                'success' => true,
-                'metrics' => $metrics
-            ]);
+                'status' => 'success',
+                'message' => 'Model metrics retrieved successfully',
+                'data' => $metrics
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Metrics error: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
-                'message' => 'Failed to get metrics: ' . $e->getMessage()
-            ]);
+                'status' => 'error',
+                'message' => 'Failed to retrieve model metrics: ' . $e->getMessage()
+            ], 500);
         }
     }
 
