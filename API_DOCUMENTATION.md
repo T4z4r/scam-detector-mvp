@@ -406,6 +406,179 @@ Get detailed model performance metrics.
 }
 ```
 
+### POST /feedback/scam-message
+
+Report a scam message to help improve the model.
+
+#### Endpoint Details
+- **URL**: `/feedback/scam-message`
+- **Method**: `POST`
+- **Content-Type**: `application/json`
+- **Rate Limit**: 50 requests per hour per IP
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `message_text` | string | Yes | The scam message content (max 1000 characters) |
+| `sender_identifier` | string | No | The sender identifier (phone number, name, etc., max 50 characters) |
+| `sender_type` | string | No | Type of sender: `phone`, `email`, `name`, or `other` (default: `other`) |
+| `user_id` | string | No | Optional user identifier for tracking |
+
+#### Example Request
+
+```bash
+curl -X POST https://api.your-domain.com/v1/feedback/scam-message \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message_text": "M-Pesa reversal Ksh 2500 pending. Confirm PIN to complete reversal. Call 0712345678",
+    "sender_identifier": "+254712345678",
+    "sender_type": "phone",
+    "user_id": "user123"
+  }'
+```
+
+#### Response Format
+
+**Success Response (201 Created)**
+```json
+{
+  "status": "success",
+  "message": "Scam message reported successfully. Thank you for helping improve our detection!",
+  "data": {
+    "feedback_id": 12345,
+    "message": "Your report helps train our AI to detect similar scams better."
+  }
+}
+```
+
+### POST /feedback/scam-sender
+
+Report a known scam sender/contact.
+
+#### Endpoint Details
+- **URL**: `/feedback/scam-sender`
+- **Method**: `POST`
+- **Content-Type**: `application/json`
+- **Rate Limit**: 50 requests per hour per IP
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `sender_identifier` | string | Yes | The sender identifier (max 50 characters) |
+| `sender_type` | string | Yes | Type of sender: `phone`, `email`, `name`, or `other` |
+| `additional_info` | string | No | Additional context about the sender (max 500 characters) |
+| `user_id` | string | No | Optional user identifier for tracking |
+
+#### Example Request
+
+```bash
+curl -X POST https://api.your-domain.com/v1/feedback/scam-sender \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sender_identifier": "+254712345678",
+    "sender_type": "phone",
+    "additional_info": "Constantly sends M-Pesa reversal scams",
+    "user_id": "user123"
+  }'
+```
+
+#### Response Format
+
+**Success Response (201 Created)**
+```json
+{
+  "status": "success",
+  "message": "Scam sender reported successfully. This information will help protect others.",
+  "data": {
+    "sender_id": 123,
+    "message": "We\'ve added this sender to our database of known scammers."
+  }
+}
+```
+
+### POST /feedback/false-positive
+
+Report a false positive (legitimate message flagged as scam).
+
+#### Endpoint Details
+- **URL**: `/feedback/false-positive`
+- **Method**: `POST`
+- **Content-Type**: `application/json`
+- **Rate Limit**: 50 requests per hour per IP
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `message_text` | string | Yes | The legitimate message content (max 1000 characters) |
+| `sender_identifier` | string | No | The sender identifier (max 50 characters) |
+| `reason` | string | No | Why you believe this is a false positive (max 200 characters) |
+| `user_id` | string | No | Optional user identifier for tracking |
+
+#### Example Request
+
+```bash
+curl -X POST https://api.your-domain.com/v1/feedback/false-positive \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message_text": "Hi John, your appointment is confirmed for tomorrow at 2pm. See you then!",
+    "sender_identifier": "Clinic Booking",
+    "reason": "Legitimate appointment reminder from my doctor",
+    "user_id": "user123"
+  }'
+```
+
+#### Response Format
+
+**Success Response (201 Created)**
+```json
+{
+  "status": "success",
+  "message": "False positive reported successfully. We\'ll use this to improve our model.",
+  "data": {
+    "feedback_id": 12346,
+    "message": "Thank you for helping us reduce false positives!"
+  }
+}
+```
+
+### GET /feedback/stats
+
+Get feedback statistics and system performance.
+
+#### Endpoint Details
+- **URL**: `/feedback/stats`
+- **Method**: `GET`
+- **Rate Limit**: 30 requests per hour per IP
+
+#### Example Request
+
+```bash
+curl -X GET https://api.your-domain.com/v1/feedback/stats
+```
+
+#### Response Format
+
+**Success Response (200 OK)**
+```json
+{
+  "status": "success",
+  "message": "Feedback statistics retrieved successfully",
+  "data": {
+    "total_feedback": 1250,
+    "scam_messages_reported": 850,
+    "scam_senders_reported": 320,
+    "false_positives_reported": 80,
+    "verified_training_samples": 920,
+    "known_scam_senders": 156,
+    "model_last_trained": "2025-12-30 10:30:00",
+    "accuracy_improvement": "+2.3% this month"
+  }
+}
+```
+
 ## 📝 Request Format
 
 ### Content Type
@@ -751,6 +924,50 @@ X-Analytics-Requests: 15234
 X-Analytics-Success-Rate: 98.5%
 X-Analytics-Avg-Response-Time: 145ms
 ```
+
+## 🤖 Continuous Learning System
+
+### Overview
+Our system includes an advanced continuous learning mechanism that automatically improves detection accuracy based on user feedback:
+
+#### Key Features
+- **Automatic Feedback Processing**: User reports are automatically analyzed and added to training data
+- **Model Retraining**: System retrains when sufficient new data is available (minimum 10 new samples)
+- **Sender Reputation Database**: Known scammers are tracked for immediate detection
+- **Verification System**: User-submitted content is verified before being added to training data
+- **Scheduled Maintenance**: Daily model retraining and weekly data cleanup
+
+#### Learning Pipeline
+1. **User Reports**: Users report scam messages, senders, or false positives
+2. **Automatic Processing**: Reports are processed every 6 hours
+3. **Data Verification**: Content is verified for accuracy and quality
+4. **Model Updates**: Verified data is added to training dataset
+5. **Automatic Retraining**: Model retrains daily when new data is available
+6. **Performance Monitoring**: System tracks accuracy improvements
+
+#### Console Commands
+```bash
+# Process feedback and optionally retrain model
+php artisan scam:process-feedback --auto-retrain
+
+# Database backup and maintenance
+php artisan scam:backup-maintenance --all
+
+# Check system status
+php artisan scam:backup-maintenance --backup
+```
+
+#### Scheduled Tasks
+- **Every 6 hours**: Process unprocessed feedback
+- **Daily at 2 AM**: Process feedback and retrain model (if needed)
+- **Weekly**: Database cleanup and backup
+
+### Model Performance Tracking
+The system continuously monitors:
+- **Accuracy improvement**: Tracks detection accuracy over time
+- **False positive reduction**: Monitors and reduces incorrect flagging
+- **Training data growth**: Shows expansion of verified training dataset
+- **Sender detection success**: Measures effectiveness of known scammer database
 
 ## 🔄 Changelog
 

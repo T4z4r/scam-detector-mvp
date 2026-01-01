@@ -46,23 +46,19 @@ class SpamDetector
     public function train(): string
     {
         try {
-            // Load dataset (tab-separated: label\ttext)
-            $datasetPath = __DIR__ . '/../../storage/app/spam.csv';
-            if (!file_exists($datasetPath)) {
-                throw new \Exception('Dataset not found at ' . $datasetPath);
+            // Load training data from database
+            $trainingData = \App\Models\TrainingData::forTraining()->get();
+            
+            if ($trainingData->isEmpty()) {
+                throw new \Exception('No training data found in database');
             }
-
-            $dataset = new CsvDataset($datasetPath, 1, true, "\t");
 
             $samples = [];
             $targets = [];
-            foreach ($dataset->getSamples() as $index => $sample) {
-                $samples[] = $this->preprocess($sample[0]);
-                $targets[] = $dataset->getTargets()[$index]; // 'spam' or 'ham'
-            }
-
-            if (empty($samples)) {
-                throw new \Exception('No samples found in dataset');
+            
+            foreach ($trainingData as $data) {
+                $samples[] = $this->preprocess($data->text);
+                $targets[] = $data->label; // 'spam' or 'ham'
             }
 
             $pipeline = new Pipeline(
@@ -77,8 +73,8 @@ class SpamDetector
             file_put_contents($modelPath, serialize($pipeline));
             $this->pipeline = $pipeline;
 
-            $this->safeLog('info', 'Spam model trained successfully with ' . count($samples) . ' samples.');
-            return 'Model trained and saved successfully!';
+            $this->safeLog('info', 'Spam model trained successfully with ' . count($samples) . ' samples from database.');
+            return 'Model trained and saved successfully with ' . count($samples) . ' samples!';
         } catch (\Exception $e) {
             $this->safeLog('error', 'Training failed: ' . $e->getMessage());
             throw $e;
@@ -176,6 +172,16 @@ class SpamDetector
         }
 
         $processed = $this->preprocess($text . ' ' . $sender);
+
+        // Check if sender is a known scammer first
+        $senderCheck = $this->isKnownScammer($sender);
+        if ($senderCheck['is_scammer']) {
+            return [
+                'label' => 'scam',
+                'confidence' => $senderCheck['confidence'],
+                'reason' => 'Known scammer: ' . $senderCheck['reason']
+            ];
+        }
 
         // Extract pattern features for better understanding (but don't override ML)
         $patternFeatures = $this->extractPatternFeatures($text . ' ' . $sender);
@@ -335,6 +341,60 @@ class SpamDetector
     {
         $confidence = $this->calculatePatternConfidence($features);
         return $confidence > 0.6 ? 'scam' : 'safe';
+    }
+    
+    /**
+     * Check if sender is a known scammer
+     */
+    protected function isKnownScammer(string $sender): array
+    {
+        if (empty($sender)) {
+            return ['is_scammer' => false, 'confidence' => 0, 'reason' => 'No sender provided'];
+        }
+        
+        // Determine sender type
+        $senderType = $this->getSenderType($sender);
+        
+        // Look up in database
+        $scamSender = \App\Models\ScamSender::where('sender_identifier', $sender)
+            ->where('sender_type', $senderType)
+            ->first();
+            
+        if ($scamSender) {
+            $confidence = min(0.95, 0.7 + ($scamSender->report_count * 0.05));
+            return [
+                'is_scammer' => true,
+                'confidence' => $confidence,
+                'reason' => 'Known scammer (' . $scamSender->report_count . ' reports)',
+                'sender_type' => $senderType
+            ];
+        }
+        
+        return ['is_scammer' => false, 'confidence' => 0, 'reason' => 'Sender not in scammer database'];
+    }
+    
+    /**
+     * Determine sender type based on format
+     */
+    protected function getSenderType(string $sender): string
+    {
+        // Phone number (10+ digits)
+        if (preg_match('/^\d{10,}$/', $sender)) {
+            return 'phone';
+        }
+        
+        // Email address
+        if (filter_var($sender, FILTER_VALIDATE_EMAIL)) {
+            return 'email';
+        }
+        
+        // Short code (3-6 digits, commonly used for services)
+        if (preg_match('/^\d{3,6}$/', $sender)) {
+            return 'short_code';
+        }
+        
+        // Default to name/identifier
+        return 'name';
     }
 }
 
